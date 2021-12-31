@@ -2,7 +2,7 @@ from sanic import Sanic, response
 
 from schema import schema
 
-app = Sanic()
+app = Sanic(__name__)
 
 
 @app.route("/", methods=["POST"])
