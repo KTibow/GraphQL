@@ -4,6 +4,12 @@
         <link
             href="https://unpkg.com/graphiql/graphiql.min.css"
             rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.23.0/theme/dracula.css" />
+        <style>
+            .topBar, .docExplorerWrap, .docExplorerShow, .variable-editor {
+                filter: invert(1) hue-rotate(180deg);
+            }
+        </style>
     </head>
     <body style="margin: 0">
         <div id="graphiql" style="height: 100vh"></div>
@@ -22,7 +28,7 @@
             const fetcher = GraphiQL.createFetcher({ url: "/" });
 
             ReactDOM.render(
-                React.createElement(GraphiQL, { fetcher: fetcher }),
+                React.createElement(GraphiQL, { fetcher: fetcher, editorTheme: "dracula" }),
                 document.getElementById("graphiql")
             );
         </script>
