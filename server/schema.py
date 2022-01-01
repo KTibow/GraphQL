@@ -25,10 +25,17 @@ class Item(graphene.ObjectType):
             bazaar_info = requests.get("https://api.hypixel.net/skyblock/bazaar")
             bazaar_info = bazaar_info.json()["products"]
             last_bazaar_update = time.time()
-        
-        if self.item_id in bazaar_info and len(bazaar_info[self.item_id]["sell_summary"]) > 0:
-            highest_buy_price = bazaar_info[self.item_id]["sell_summary"][0]["pricePerUnit"]
-            lowest_sell_price = bazaar_info[self.item_id]["buy_summary"][0]["pricePerUnit"]
+
+        if (
+            self.item_id in bazaar_info
+            and len(bazaar_info[self.item_id]["sell_summary"]) > 0
+        ):
+            highest_buy_price = bazaar_info[self.item_id]["sell_summary"][0][
+                "pricePerUnit"
+            ]
+            lowest_sell_price = bazaar_info[self.item_id]["buy_summary"][0][
+                "pricePerUnit"
+            ]
             return BazaarInfo(buy_price=lowest_sell_price, sell_price=highest_buy_price)
         else:
             return None

@@ -19,19 +19,11 @@ async def graphql(request):
 @app.route("/")
 async def index(request):
     return response.html(open("frontend/index.html").read())
-    """    fetch("/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                query: "{ hello }"
-            })
-        }).then(function(response) {
-            return response.json()
-        }).then(function(json) {
-            console.log(json)
-        })"""
+
+
+@app.route("/graphiql")
+async def graphiql(request):
+    return response.html(open("frontend/graphiql.html").read())
 
 
 @app.route("/site.css")

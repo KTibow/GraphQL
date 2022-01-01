@@ -29,15 +29,9 @@
                 <br />
                 items(name: "...") {
                 <br />
-                &nbsp;&nbsp;name,
+                &nbsp;&nbsp;name
                 <br />
-                &nbsp;&nbsp;bazaarInfo {
-                <br />
-                &nbsp;&nbsp;&nbsp;&nbsp;buyPrice,
-                <br />
-                &nbsp;&nbsp;&nbsp;&nbsp;sellPrice
-                <br />
-                &nbsp;&nbsp;},
+                &nbsp;&nbsp;npcSellPrice
                 <br />
                 &nbsp;&nbsp;...
                 <br />
@@ -49,9 +43,15 @@
                 <br />
                 items {
                 <br />
-                &nbsp;&nbsp;name,
+                &nbsp;&nbsp;name
                 <br />
-                &nbsp;&nbsp;npcSellPrice,
+                &nbsp;&nbsp;bazaarInfo {
+                <br />
+                &nbsp;&nbsp;&nbsp;&nbsp;buyPrice
+                <br />
+                &nbsp;&nbsp;&nbsp;&nbsp;sellPrice
+                <br />
+                &nbsp;&nbsp;}
                 <br />
                 &nbsp;&nbsp;...
                 <br />
