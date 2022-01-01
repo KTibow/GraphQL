@@ -13,12 +13,17 @@ async def graphql(request):
             {"errors": [str(error) for error in result.errors]}, status=400
         )
     else:
-        return response.json(result.data)
+        return response.json({"data": result.data})
 
 
 @app.route("/")
 async def index(request):
     return response.html(open("frontend/index.html").read())
+
+
+@app.route("/wiki")
+async def item_wiki(request):
+    return response.html(open("frontend/wiki.html").read())
 
 
 @app.route("/graphiql")

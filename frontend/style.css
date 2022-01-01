@@ -10,3 +10,7 @@
         max-width: 100%;
     }
 }
+
+.card {
+    @apply bg-neutral-700 align-top inline-block m-8 p-8;
+}

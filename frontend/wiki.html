@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="accent-color" content="#324AD5" />
+        <meta
+            name="description"
+            content="View item info for Hypixel Skyblock. Part of SB Items, a hub for various calculators." />
+        <link rel="stylesheet" href="site.css" />
+        <title>Item Wiki | SB Items</title>
+    </head>
+    <body class="bg-neutral-800 text-white font-mono">
+        <main class="prose dark:prose-invert m-auto">
+            <h1
+                class="text-5xl sm:text-8xl font-mono font-normal whitespace-nowrap overflow-hidden animate-[typewrite_2s_ease-out]">
+                > item wiki
+            </h1>
+            <h2 class="mt-1 mb-1">
+                items(name: "<input
+                    type="text"
+                    list="items"
+                    class="bg-neutral-700 text-white" />") {
+            </h2>
+            <div class="ml-8"></div>
+            <h2 class="mt-1 mb-1">}</h2>
+        </main>
+        <datalist id="items"></datalist>
+        <script>
+            function graphQL(query) {
+                return fetch("/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                    }),
+                });
+            }
+            graphQL(`
+                {
+                    items {
+                        name
+                    }
+                }
+            `)
+                .then((res) => res.json())
+                .then((res) => {
+                    let allOptions = "";
+                    for (let item of res.data.items) {
+                        allOptions += `<option value="${item.name}">${item.name}</option>`;
+                    }
+                    document.querySelector("#items").innerHTML = allOptions;
+                });
+            function updateRepresentation(name) {
+                graphQL(`
+                        {
+                            items(name: "${name}") {
+                                itemId
+                                npcSellPrice
+                                bazaarInfo {
+                                    buyPrice
+                                    sellPrice
+                                }
+                            }
+                        }
+                    `)
+                        .then((res) => res.json())
+                        .then((res) => {
+                            let item = res.data.items[0];
+                            let htmlDesc = "";
+                            for (let key in item) {
+                                if (typeof item[key] === "string") {
+                                    htmlDesc += `<strong>${key}</strong>: ${item[key]}<br />`;
+                                } else if (typeof item[key] === "number") {
+                                    htmlDesc += `<strong>${key}</strong>: ${item[key].toLocaleString("en-US")}<br />`;
+                                } else if (typeof item[key] === "object") {
+                                    let jsonRep = JSON.stringify(item[key], null, 2);
+                                    htmlDesc += `<strong>${key}</strong>: ${jsonRep.replace(/ /g, "&nbsp;").replace(/\n/g, "<br />")}<br />`;
+                                }
+                            }
+                            document.querySelector("div").innerHTML = htmlDesc;
+                        });
+            }
+            document.querySelector("input").addEventListener("input", (e) => {
+                if (
+                    document.querySelector(`option[value="${e.target.value}"]`)
+                ) {
+                    updateRepresentation(e.target.value);
+                }
+            });
+            document.querySelector("input").value = "";
+        </script>
+    </body>
+</html>

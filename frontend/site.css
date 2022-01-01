@@ -835,16 +835,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin: auto;
 }
 
-.m-8 {
-  margin: 2rem;
+.mt-1 {
+  margin-top: 0.25rem;
 }
 
-.inline-block {
-  display: inline-block;
+.mb-1 {
+  margin-bottom: 0.25rem;
 }
 
-.flex {
-  display: flex;
+.ml-8 {
+  margin-left: 2rem;
 }
 
 .animate-\[typewrite_2s_ease-out\] {
@@ -868,10 +868,6 @@ Ensure the default browser behavior of the `hidden` attribute.
 .bg-neutral-700 {
   --tw-bg-opacity: 1;
   background-color: rgb(64 64 64 / var(--tw-bg-opacity));
-}
-
-.p-8 {
-  padding: 2rem;
 }
 
 .font-mono {
@@ -910,6 +906,15 @@ Ensure the default browser behavior of the `hidden` attribute.
   100% {
     max-width: 100%;
   }
+}
+
+.card {
+  margin: 2rem;
+  display: inline-block;
+  --tw-bg-opacity: 1;
+  background-color: rgb(64 64 64 / var(--tw-bg-opacity));
+  padding: 2rem;
+  vertical-align: top;
 }
 
 @media (prefers-color-scheme: dark) {
