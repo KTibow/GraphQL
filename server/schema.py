@@ -1,11 +1,15 @@
 import graphene, requests, time
 
-all_items = requests.get("https://api.hypixel.net/resources/skyblock/items")
-all_items = all_items.json()["items"]
+web_cache = {}
 
-bazaar_info = requests.get("https://api.hypixel.net/skyblock/bazaar")
-bazaar_info = bazaar_info.json()["products"]
-last_bazaar_update = time.time()
+
+def resolve_site(url):
+    if url in web_cache:
+        if time.time() - web_cache[url]["time"] < 120:
+            return web_cache[url]["data"]
+    response = requests.get(url)
+    web_cache[url] = {"time": time.time(), "data": response.json()}
+    return response.json()
 
 
 class BazaarInfo(graphene.ObjectType):
@@ -19,26 +23,22 @@ class Item(graphene.ObjectType):
     bazaar_info = graphene.Field(BazaarInfo)
     npc_sell_price = graphene.Float()
 
-    def resolve_bazaar_info(self, info):
-        global bazaar_info, last_bazaar_update
-        if time.time() - last_bazaar_update > 120:
-            bazaar_info = requests.get("https://api.hypixel.net/skyblock/bazaar")
-            bazaar_info = bazaar_info.json()["products"]
-            last_bazaar_update = time.time()
-
-        if (
-            self.item_id in bazaar_info
-            and len(bazaar_info[self.item_id]["sell_summary"]) > 0
-        ):
-            highest_buy_price = bazaar_info[self.item_id]["sell_summary"][0][
-                "pricePerUnit"
-            ]
-            lowest_sell_price = bazaar_info[self.item_id]["buy_summary"][0][
-                "pricePerUnit"
-            ]
-            return BazaarInfo(buy_price=lowest_sell_price, sell_price=highest_buy_price)
-        else:
-            return None
+    def resolve_bazaar_info(self, _info):
+        bz_products = resolve_site("https://api.hypixel.net/skyblock/bazaar")[
+            "products"
+        ]
+        return (
+            {
+                "buy_price": bz_products[self.item_id]["sell_summary"][0][
+                    "pricePerUnit"
+                ],
+                "sell_price": bz_products[self.item_id]["buy_summary"][0][
+                    "pricePerUnit"
+                ],
+            }
+            if self.item_id in bz_products and bz_products[self.item_id]["sell_summary"]
+            else None
+        )
 
 
 class Query(graphene.ObjectType):
@@ -51,7 +51,9 @@ class Query(graphene.ObjectType):
                 item_id=item["id"],
                 npc_sell_price=item.get("npc_sell_price"),
             )
-            for item in all_items
+            for item in resolve_site(
+                "https://api.hypixel.net/resources/skyblock/items"
+            )["items"]
         ]
         if name:
             return [item for item in available_items if item.name == name]

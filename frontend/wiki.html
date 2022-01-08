@@ -18,10 +18,12 @@
                 > item wiki
             </h1>
             <h2 class="mt-1 mb-1">
-                items(name: "<input
+                items(name: "
+                <input
                     type="text"
                     list="items"
-                    class="bg-neutral-700 text-white" />") {
+                    class="bg-neutral-700 text-white" />
+                ") {
             </h2>
             <div class="ml-8"></div>
             <h2 class="mt-1 mb-1">}</h2>
@@ -67,22 +69,30 @@
                             }
                         }
                     `)
-                        .then((res) => res.json())
-                        .then((res) => {
-                            let item = res.data.items[0];
-                            let htmlDesc = "";
-                            for (let key in item) {
-                                if (typeof item[key] === "string") {
-                                    htmlDesc += `<strong>${key}</strong>: ${item[key]}<br />`;
-                                } else if (typeof item[key] === "number") {
-                                    htmlDesc += `<strong>${key}</strong>: ${item[key].toLocaleString("en-US")}<br />`;
-                                } else if (typeof item[key] === "object") {
-                                    let jsonRep = JSON.stringify(item[key], null, 2);
-                                    htmlDesc += `<strong>${key}</strong>: ${jsonRep.replace(/ /g, "&nbsp;").replace(/\n/g, "<br />")}<br />`;
-                                }
+                    .then((res) => res.json())
+                    .then((res) => {
+                        let item = res.data.items[0];
+                        let htmlDesc = "";
+                        for (let key in item) {
+                            if (typeof item[key] === "string") {
+                                htmlDesc += `<strong>${key}</strong>: ${item[key]}<br />`;
+                            } else if (typeof item[key] === "number") {
+                                htmlDesc += `<strong>${key}</strong>: ${item[
+                                    key
+                                ].toLocaleString("en-US")}<br />`;
+                            } else if (typeof item[key] === "object") {
+                                let jsonRep = JSON.stringify(
+                                    item[key],
+                                    null,
+                                    2
+                                );
+                                htmlDesc += `<strong>${key}</strong>: ${jsonRep
+                                    .replace(/ /g, "&nbsp;")
+                                    .replace(/\n/g, "<br />")}<br />`;
                             }
-                            document.querySelector("div").innerHTML = htmlDesc;
-                        });
+                        }
+                        document.querySelector("div").innerHTML = htmlDesc;
+                    });
             }
             document.querySelector("input").addEventListener("input", (e) => {
                 if (

@@ -4,9 +4,14 @@
         <link
             href="https://unpkg.com/graphiql/graphiql.min.css"
             rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.23.0/theme/dracula.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.23.0/theme/dracula.css" />
         <style>
-            .topBar, .docExplorerWrap, .docExplorerShow, .variable-editor {
+            .topBar,
+            .docExplorerWrap,
+            .docExplorerShow,
+            .variable-editor {
                 filter: invert(1) hue-rotate(180deg);
             }
         </style>
@@ -28,7 +33,10 @@
             const fetcher = GraphiQL.createFetcher({ url: "/" });
 
             ReactDOM.render(
-                React.createElement(GraphiQL, { fetcher: fetcher, editorTheme: "dracula" }),
+                React.createElement(GraphiQL, {
+                    fetcher: fetcher,
+                    editorTheme: "dracula",
+                }),
                 document.getElementById("graphiql")
             );
         </script>
