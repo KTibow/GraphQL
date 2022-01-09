@@ -4,9 +4,9 @@ import ujson, gzip
 web_cache = {}
 
 
-def resolve_site(url, resolve=lambda resp: resp.json()):
+def resolve_site(url, resolve=lambda resp: resp.json(), expiry=300):
     if url in web_cache:
-        if time.time() - web_cache[url]["time"] < 120:
+        if time.time() - web_cache[url]["time"] < expiry:
             return web_cache[url]["data"]
     response = requests.get(url)
     web_cache[url] = {"time": time.time(), "data": resolve(response)}
@@ -31,7 +31,7 @@ class Item(graphene.ObjectType):
     auction_info = graphene.Field(AuctionInfo)
 
     def resolve_bazaar_info(self, _info):
-        bz_products = resolve_site("https://api.hypixel.net/skyblock/bazaar")["products"]
+        bz_products = resolve_site("https://api.hypixel.net/skyblock/bazaar", expiry=90)["products"]
         return (
             {
                 "buy_price": bz_products[self.item_id]["sell_summary"][0]["pricePerUnit"],
