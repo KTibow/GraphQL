@@ -1,10 +1,17 @@
-import graphene, requests, time
-import ujson, gzip, os
+import gzip
+import os
+import time
+
+import graphene
+import requests
+import ujson
 
 data_cache = {}
 
 if not os.path.exists("neu_cache"):
-    os.system("git clone https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO neu_cache --depth 1")
+    os.system(
+        "git clone https://github.com/NotEnoughUpdates/NotEnoughUpdates-REPO neu_cache --depth 1"
+    )
 
 
 def resolve_site(url, resolve=lambda resp: resp.json(), expiry=300):
@@ -44,7 +51,9 @@ class Item(graphene.ObjectType):
     neu_info = graphene.Field(NEUInfo)
 
     def resolve_bazaar_info(self, _info):
-        bz_products = resolve_site("https://api.hypixel.net/skyblock/bazaar", expiry=90)["products"]
+        bz_products = resolve_site(
+            "https://api.hypixel.net/skyblock/bazaar", expiry=90
+        )["products"]
         return bz_products.get(self.item_id, {}).get("sell_summary") and {
             "buy_price": bz_products[self.item_id]["sell_summary"][0]["pricePerUnit"],
             "sell_price": bz_products[self.item_id]["buy_summary"][0]["pricePerUnit"],
@@ -83,7 +92,9 @@ class Query(graphene.ObjectType):
                 npc_sell_price=item.get("npc_sell_price"),
                 raw_data=ujson.dumps(item),
             )
-            for item in resolve_site("https://api.hypixel.net/resources/skyblock/items")["items"]
+            for item in resolve_site(
+                "https://api.hypixel.net/resources/skyblock/items"
+            )["items"]
         ]
         if name:
             return [item for item in available_items if item.name == name]
