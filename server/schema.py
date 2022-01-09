@@ -24,17 +24,11 @@ class Item(graphene.ObjectType):
     npc_sell_price = graphene.Float()
 
     def resolve_bazaar_info(self, _info):
-        bz_products = resolve_site("https://api.hypixel.net/skyblock/bazaar")[
-            "products"
-        ]
+        bz_products = resolve_site("https://api.hypixel.net/skyblock/bazaar")["products"]
         return (
             {
-                "buy_price": bz_products[self.item_id]["sell_summary"][0][
-                    "pricePerUnit"
-                ],
-                "sell_price": bz_products[self.item_id]["buy_summary"][0][
-                    "pricePerUnit"
-                ],
+                "buy_price": bz_products[self.item_id]["sell_summary"][0]["pricePerUnit"],
+                "sell_price": bz_products[self.item_id]["buy_summary"][0]["pricePerUnit"],
             }
             if self.item_id in bz_products and bz_products[self.item_id]["sell_summary"]
             else None
@@ -51,9 +45,7 @@ class Query(graphene.ObjectType):
                 item_id=item["id"],
                 npc_sell_price=item.get("npc_sell_price"),
             )
-            for item in resolve_site(
-                "https://api.hypixel.net/resources/skyblock/items"
-            )["items"]
+            for item in resolve_site("https://api.hypixel.net/resources/skyblock/items")["items"]
         ]
         if name:
             return [item for item in available_items if item.name == name]

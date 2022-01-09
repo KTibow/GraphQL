@@ -9,9 +9,7 @@ app = Sanic(__name__)
 async def graphql(request):
     result = schema.execute(request.json["query"])
     if result.errors:
-        return response.json(
-            {"errors": [str(error) for error in result.errors]}, status=400
-        )
+        return response.json({"errors": [str(error) for error in result.errors]}, status=400)
     else:
         return response.json({"data": result.data})
 
