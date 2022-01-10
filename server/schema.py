@@ -1,3 +1,4 @@
+"""GraphQL schema."""
 import gzip
 import os
 import time
@@ -15,33 +16,48 @@ if not os.path.exists("neu_cache"):
 
 
 def resolve_site(url, resolve=lambda resp: resp.json(), expiry=300):
-    if url in data_cache:
-        if time.time() - data_cache[url]["time"] < expiry:
-            return data_cache[url]["data"]
-    response = resolve(requests.get(url))
-    data_cache[url] = {"time": time.time(), "data": response}
-    return response
+    """Resolve a site using a cache.
+
+    Args:
+        url: The URL to resolve.
+        resolve: A function to resolve the URL.
+        expiry: The time in seconds to cache the response.
+
+    Returns:
+        The content of the URL.
+    """
+    if url not in data_cache or time.time() - data_cache[url]["time"] > expiry:
+        data_cache[url] = {"time": time.time(), "data": resolve(requests.get(url))}
+    return data_cache[url]["data"]
 
 
 class BazaarInfo(graphene.ObjectType):
+    """Object to store bazaar info for an item."""
+
     buy_price = graphene.Float()
     sell_price = graphene.Float()
     raw_data = graphene.String()
 
 
 class AuctionInfo(graphene.ObjectType):
+    """Object to store auction info for an item."""
+
     buy_price = graphene.Float()
     sold_per_day = graphene.Int()
     raw_data = graphene.String()
 
 
 class NEUInfo(graphene.ObjectType):
+    """Object to store data from NotEnoughUpdates for an item."""
+
     recipe = graphene.List(graphene.String)
     wiki_link = graphene.String()
     raw_data = graphene.String()
 
 
 class Item(graphene.ObjectType):
+    """Object to store data for an item."""
+
     name = graphene.String()
     item_id = graphene.String()
     npc_sell_price = graphene.Float()
@@ -51,16 +67,26 @@ class Item(graphene.ObjectType):
     neu_info = graphene.Field(NEUInfo)
 
     def resolve_bazaar_info(self, _info):
+        """Resolve an BazaarInfo for an item.
+
+        Returns:
+            Data for a BazaarInfo object.
+        """
         bz_products = resolve_site(
             "https://api.hypixel.net/skyblock/bazaar", expiry=90
         )["products"]
         return bz_products.get(self.item_id, {}).get("sell_summary") and {
-            "buy_price": bz_products[self.item_id]["sell_summary"][0]["pricePerUnit"],
-            "sell_price": bz_products[self.item_id]["buy_summary"][0]["pricePerUnit"],
+            "buy_price": bz_products[self.item_id]["buy_summary"][0]["pricePerUnit"],
+            "sell_price": bz_products[self.item_id]["sell_summary"][0]["pricePerUnit"],
             "raw_data": ujson.dumps(bz_products[self.item_id]),
         }
 
     def resolve_auction_info(self, _info):
+        """Resolve an AuctionInfo for an item.
+
+        Returns:
+            Data for an AuctionInfo object.
+        """
         auction_info = resolve_site(
             "https://moulberry.codes/auction_averages/3day.json.gz",
             resolve=lambda resp: ujson.loads(gzip.decompress(resp.content).decode()),
@@ -72,6 +98,11 @@ class Item(graphene.ObjectType):
         }
 
     def resolve_neu_info(self, _info):
+        """Resolve a NEUInfo for an item.
+
+        Returns:
+            Data for a NEUInfo object.
+        """
         item_path = f"neu_cache/items/{self.item_id}.json"
         item_data = os.path.exists(item_path) and ujson.load(open(item_path))
         return item_data and {
@@ -82,9 +113,26 @@ class Item(graphene.ObjectType):
 
 
 class Query(graphene.ObjectType):
-    items = graphene.List(Item, name=graphene.String(), item_id=graphene.String())
+    """Base query for the schema."""
 
-    def resolve_items(self, info, name=None, item_id=None):
+    items = graphene.List(
+        Item,
+        name=graphene.String(),
+        item_id=graphene.String(),
+        description="""Returns a list of [items](https://api.hypixel.net/resources/skyblock/items).
+Filterable by name and item_id.""",
+    )
+
+    def resolve_items(self, _info, name=None, item_id=None):
+        """Resolve a list of items.
+
+        Args:
+            name: The name of the item to filter by.
+            item_id: The item ID to filter by.
+
+        Returns:
+            A list of items.
+        """
         available_items = [
             Item(
                 name=item["name"],
@@ -100,8 +148,7 @@ class Query(graphene.ObjectType):
             return [item for item in available_items if item.name == name]
         elif item_id:
             return [item for item in available_items if item.item_id == item_id]
-        else:
-            return available_items
+        return available_items
 
 
 schema = graphene.Schema(query=Query)

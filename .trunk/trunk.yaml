@@ -4,7 +4,9 @@ cli:
 lint:
     enabled:
         - black-py@21.10b0
-        - flake8@3.9.2
+        - flake8@3.9.2:
+              packages:
+                  - wemake-python-styleguide
         - gitleaks@7.6.1
         - isort@5.9.3
         - prettier@2.4.1
