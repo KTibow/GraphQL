@@ -59,6 +59,7 @@
                         allOptions += `<option value="${item.name}">${item.name}</option>`;
                     }
                     document.querySelector("#items").innerHTML = allOptions;
+                    updateForHash();
                 });
             function updateRepresentation(name) {
                 graphQL(`
@@ -92,10 +93,10 @@
                                 item.neuInfo?.wikiLink ? `<a href="${item.neuInfo.wikiLink}">${item.itemId}</a>` : item.itemId
                             }</p>
                             <p class="mt-1 mb-1">npc sell price: ${item.npcSellPrice?.toLocaleString()}</p>
-                            <p class="mt-1 mb-1">crafting recipe (WIP):</p>
                             ${
                                 item.neuInfo?.recipe
                                     ? `
+                            <p class="mt-1 mb-1">crafting recipe (WIP):</p>
                             <ol>
                                 <li>${item.neuInfo?.recipe?.at(0)}</li>
                                 <li>${item.neuInfo?.recipe?.at(1)}</li>
@@ -125,9 +126,16 @@
             document.querySelector("input").addEventListener("input", (e) => {
                 if (document.querySelector(`option[value="${e.target.value}"]`)) {
                     updateRepresentation(e.target.value);
+                    location.hash = encodeURI(document.querySelector("input").value);
                 }
             });
-            document.querySelector("input").value = "";
+            const updateForHash = () => {
+                if (location.hash && document.querySelector(`option[value="${decodeURI(location.hash.slice(1))}"]`)) {
+                    updateRepresentation(decodeURI(location.hash.slice(1)));
+                    document.querySelector("input").value = decodeURI(location.hash.slice(1));
+                }
+            };
+            window.addEventListener("hashchange", updateForHash);
         </script>
     </body>
 </html>
