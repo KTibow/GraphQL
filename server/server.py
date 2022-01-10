@@ -17,6 +17,7 @@ async def graphql(request):
     """
     graphql_response = schema.execute(request.json["query"])
     if graphql_response.errors:
+        print(graphql_response.errors)
         return response.json(
             {"errors": [str(error) for error in graphql_response.errors]}, status=400
         )

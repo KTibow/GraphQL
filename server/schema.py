@@ -32,7 +32,7 @@ def resolve_site(url, resolve=lambda resp: resp.json(), expiry=300):
 
 
 class BazaarInfo(graphene.ObjectType):
-    """Object to store bazaar info for an item."""
+    """Object to store bazaar info for a Skyblock item."""
 
     buy_price = graphene.Float(description="The lowest buy price.")
     sell_price = graphene.Float(description="The highest sell price.")
@@ -40,19 +40,19 @@ class BazaarInfo(graphene.ObjectType):
 
 
 class AuctionInfo(graphene.ObjectType):
-    """Object to store auction info for an item."""
+    """Object to store auction info for a Skyblock item."""
 
     buy_price = graphene.Float(description="The lowest buy price.")
-    sold_per_day = graphene.Int(description="The number of items sold per day.")
+    sold_per_day = graphene.Int(description="The number sold per day.")
     raw_data = graphene.String(description="Raw data from the NEU auction house.")
 
 
 class NEUInfo(graphene.ObjectType):
-    """Object to store data from NotEnoughUpdates for an item."""
+    """Object to store data from NotEnoughUpdates for a Skyblock item."""
 
     recipe = graphene.List(
         graphene.String,
-        description="""The recipe for the item. It's returned in the format of
+        description="""The recipe for the Skyblock item. It's returned in the format of
 [
     "ID:AMOUNT", "ID:AMOUNT", "ID:AMOUNT",
     "ID:AMOUNT", "ID:AMOUNT", "ID:AMOUNT",
@@ -60,16 +60,16 @@ class NEUInfo(graphene.ObjectType):
 ]""",
     )
     wiki_link = graphene.String(
-        description="The Hypixel Skyblock fandom link for the item."
+        description="The Hypixel Skyblock fandom link for the Skyblock item."
     )
     raw_data = graphene.String(description="Raw data from the NEU database.")
 
 
-class Item(graphene.ObjectType):
-    """Object to store data for an item."""
+class SBItem(graphene.ObjectType):
+    """Object to store data for a Skyblock item."""
 
     name = graphene.String(description="The plain name of the item.")
-    item_id = graphene.String(description="The Hypixel ID of the item.")
+    item_id = graphene.String(description="The Skyblock ID of the item.")
     npc_sell_price = graphene.Float(description="The NPC sell price for the item.")
     raw_data = graphene.String(description="Raw data from the Hypixel items API.")
     bazaar_info = graphene.Field(
@@ -80,8 +80,8 @@ class Item(graphene.ObjectType):
     )
     neu_info = graphene.Field(NEUInfo, description="Data from the NEU database.")
 
-    def resolve_bazaar_info(self, _info):
-        """Resolve an BazaarInfo for an item.
+    def resolve_bazaar_info(self, _execution_info):
+        """Resolve an BazaarInfo for a Skyblock item.
 
         Returns:
             Data for a BazaarInfo object.
@@ -90,13 +90,13 @@ class Item(graphene.ObjectType):
             "https://api.hypixel.net/skyblock/bazaar", expiry=90
         )["products"]
         return bz_products.get(self.item_id, {}).get("sell_summary") and {
-            "buy_price": bz_products[self.item_id]["buy_summary"][0]["pricePerUnit"],
-            "sell_price": bz_products[self.item_id]["sell_summary"][0]["pricePerUnit"],
+            "buy_price": bz_products[self.item_id]["sell_summary"][0]["pricePerUnit"],
+            "sell_price": bz_products[self.item_id]["buy_summary"][0]["pricePerUnit"],
             "raw_data": ujson.dumps(bz_products[self.item_id]),
         }
 
-    def resolve_auction_info(self, _info):
-        """Resolve an AuctionInfo for an item.
+    def resolve_auction_info(self, _execution_info):
+        """Resolve an AuctionInfo for a Skyblock item.
 
         Returns:
             Data for an AuctionInfo object.
@@ -111,8 +111,8 @@ class Item(graphene.ObjectType):
             "raw_data": ujson.dumps(auction_info[self.item_id]),
         }
 
-    def resolve_neu_info(self, _info):
-        """Resolve a NEUInfo for an item.
+    def resolve_neu_info(self, _execution_info):
+        """Resolve a NEUInfo for a Skyblock item.
 
         Returns:
             Data for a NEUInfo object.
@@ -120,8 +120,8 @@ class Item(graphene.ObjectType):
         item_path = f"neu_cache/items/{self.item_id}.json"
         item_data = os.path.exists(item_path) and ujson.load(open(item_path))
         return item_data and {
-            "recipe": item_data["recipe"].values() if "recipe" in item_data else None,
-            "wiki_link": item_data["info"][0] if "info" in item_data else None,
+            "recipe": item_data.get("recipe") and item_data["recipe"].values(),
+            "wiki_link": item_data.get("info") and item_data["info"][0],
             "raw_data": ujson.dumps(item_data),
         }
 
@@ -129,16 +129,15 @@ class Item(graphene.ObjectType):
 class Query(graphene.ObjectType):
     """Base query for the schema."""
 
-    items = graphene.List(
-        Item,
+    sb_items = graphene.List(
+        SBItem,
         name=graphene.String(),
         item_id=graphene.String(),
-        description="""Returns a list of [items](https://api.hypixel.net/resources/skyblock/items).
-Filterable by name and item_id.""",
+        description="Returns a list of [sb_items](https://api.hypixel.net/resources/skyblock/items). Filterable by name and item_id.",
     )
 
-    def resolve_items(self, _info, name=None, item_id=None):
-        """Resolve a list of items.
+    def resolve_sb_items(self, _execution_info, name=None, item_id=None):
+        """Resolve a list of Skyblock items.
 
         Args:
             name: The name of the item to filter by.
@@ -148,20 +147,22 @@ Filterable by name and item_id.""",
             A list of items.
         """
         available_items = [
-            Item(
-                name=item["name"],
-                item_id=item["id"],
-                npc_sell_price=item.get("npc_sell_price"),
-                raw_data=ujson.dumps(item),
+            SBItem(
+                name=sb_item["name"],
+                item_id=sb_item["id"],
+                npc_sell_price=sb_item.get("npc_sell_price"),
+                raw_data=ujson.dumps(sb_item),
             )
-            for item in resolve_site(
+            for sb_item in resolve_site(
                 "https://api.hypixel.net/resources/skyblock/items"
             )["items"]
         ]
         if name:
-            return [item for item in available_items if item.name == name]
+            return [sb_item for sb_item in available_items if sb_item.name == name]
         elif item_id:
-            return [item for item in available_items if item.item_id == item_id]
+            return [
+                sb_item for sb_item in available_items if sb_item.item_id == item_id
+            ]
         return available_items
 
 
