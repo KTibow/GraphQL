@@ -29,6 +29,7 @@
                 <input
                     type="text"
                     list="items"
+                    placeholder="choose item"
                     class="bg-neutral-700 text-white" />
                 ") {
             </h2>
@@ -50,7 +51,7 @@
             }
             graphQL(`
                 {
-                    items {
+                    sbItems {
                         name
                     }
                 }
@@ -58,7 +59,7 @@
                 .then((res) => res.json())
                 .then((res) => {
                     let allOptions = "";
-                    for (let item of res.data.items) {
+                    for (let item of res.data.sbItems) {
                         allOptions += `<option value="${item.name}">${item.name}</option>`;
                     }
                     document.querySelector("#items").innerHTML = allOptions;
@@ -66,19 +67,27 @@
             function updateRepresentation(name) {
                 graphQL(`
                         {
-                            items(name: "${name}") {
+                            sbItems(name: "${name}") {
                                 itemId
                                 npcSellPrice
                                 bazaarInfo {
                                     buyPrice
                                     sellPrice
                                 }
+                                auctionInfo {
+                                    buyPrice
+                                    soldPerDay
+                                }
+                                neuInfo {
+                                    recipe
+                                    wikiLink
+                                }
                             }
                         }
                     `)
                     .then((res) => res.json())
                     .then((res) => {
-                        let item = res.data.items[0];
+                        let item = res.data.sbItems[0];
                         let htmlDesc = "";
                         for (let key in item) {
                             if (typeof item[key] === "string") {
