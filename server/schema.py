@@ -73,6 +73,7 @@ class NEUInfo(graphene.ObjectType):
     "ID:AMOUNT", "ID:AMOUNT", "ID:AMOUNT"
 ]""",
     )
+    # TODO: Make the recipe return a list of objects instead of a list of strings.
     wiki_link = graphene.String(
         description="The Hypixel Skyblock fandom link for the Skyblock item."
     )

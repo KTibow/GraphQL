@@ -26,14 +26,10 @@
             </h1>
             <h2 class="mt-1 mb-1">
                 items(name: "
-                <input
-                    type="text"
-                    list="items"
-                    placeholder="choose item"
-                    class="bg-neutral-700 text-white" />
+                <input type="text" list="items" placeholder="choose item" class="bg-neutral-700 text-white" />
                 ") {
             </h2>
-            <div class="ml-8"></div>
+            <template class="ml-8" id="infoSpace"></template>
             <h2 class="mt-1 mb-1">}</h2>
         </main>
         <datalist id="items"></datalist>
@@ -88,32 +84,46 @@
                     .then((res) => res.json())
                     .then((res) => {
                         let item = res.data.sbItems[0];
-                        let htmlDesc = "";
-                        for (let key in item) {
-                            if (typeof item[key] === "string") {
-                                htmlDesc += `<strong>${key}</strong>: ${item[key]}<br />`;
-                            } else if (typeof item[key] === "number") {
-                                htmlDesc += `<strong>${key}</strong>: ${item[
-                                    key
-                                ].toLocaleString("en-US")}<br />`;
-                            } else if (typeof item[key] === "object") {
-                                let jsonRep = JSON.stringify(
-                                    item[key],
-                                    null,
-                                    2
-                                );
-                                htmlDesc += `<strong>${key}</strong>: ${jsonRep
-                                    .replace(/ /g, "&nbsp;")
-                                    .replace(/\n/g, "<br />")}<br />`;
+                        let template = document.querySelector("#infoSpace");
+                        let newDisplay = document.createElement("div");
+                        newDisplay.innerHTML = `
+                            <h2>item metadata</h2>
+                            <p class="mt-1 mb-1">item id: ${
+                                item.neuInfo?.wikiLink ? `<a href="${item.neuInfo.wikiLink}">${item.itemId}</a>` : item.itemId
+                            }</p>
+                            <p class="mt-1 mb-1">npc sell price: ${item.npcSellPrice?.toLocaleString()}</p>
+                            <p class="mt-1 mb-1">crafting recipe (WIP):</p>
+                            ${
+                                item.neuInfo?.recipe
+                                    ? `
+                            <ol>
+                                <li>${item.neuInfo?.recipe?.at(0)}</li>
+                                <li>${item.neuInfo?.recipe?.at(1)}</li>
+                                <li>${item.neuInfo?.recipe?.at(2)}</li>
+                                <li>${item.neuInfo?.recipe?.at(3)}</li>
+                                <li>${item.neuInfo?.recipe?.at(4)}</li>
+                                <li>${item.neuInfo?.recipe?.at(5)}</li>
+                                <li>${item.neuInfo?.recipe?.at(6)}</li>
+                                <li>${item.neuInfo?.recipe?.at(7)}</li>
+                                <li>${item.neuInfo?.recipe?.at(8)}</li>
+                            </ol>
+                            `
+                                    : `<p class="mt-1 mb-1">no recipe</p>`
                             }
-                        }
-                        document.querySelector("div").innerHTML = htmlDesc;
+                            <h2>bazaar stats</h2>
+                            <p class="mt-1 mb-1">buy price: ${item.bazaarInfo?.buyPrice?.toLocaleString()}</p>
+                            <p class="mt-1 mb-1">sell price: ${item.bazaarInfo?.sellPrice?.toLocaleString()}</p>
+                            <h2>auction stats</h2>
+                            <p class="mt-1 mb-1">lowest buy price: ${item.auctionInfo?.buyPrice?.toLocaleString()}</p>
+                            <p class="mt-1 mb-1">sold per day: ${item.auctionInfo?.soldPerDay?.toLocaleString()}</p>
+                        `;
+                        newDisplay.classList.add("ml-8");
+                        newDisplay.id = "infoSpace";
+                        document.querySelector("main").replaceChild(newDisplay, template);
                     });
             }
             document.querySelector("input").addEventListener("input", (e) => {
-                if (
-                    document.querySelector(`option[value="${e.target.value}"]`)
-                ) {
+                if (document.querySelector(`option[value="${e.target.value}"]`)) {
                     updateRepresentation(e.target.value);
                 }
             });
