@@ -1,4 +1,7 @@
 # Autoformatter friendly flake8 config (all formatting rules disabled)
 [flake8]
 extend-ignore = E1, E2, E3, E501, W1, W2, W3, W5
+# Personal / formatter preferences
 inline-quotes = double
+ignore = C812, WPS305, S605, S607
+#      commas, fstrng, cmnd start 

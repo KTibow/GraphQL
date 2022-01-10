@@ -15,7 +15,19 @@ if not os.path.exists("neu_cache"):
     )
 
 
-def resolve_site(url, resolve=lambda resp: resp.json(), expiry=300):
+def resolve_json(resp):
+    """Resolve JSON from a response (default utility function).
+
+    Args:
+        resp: The response object from requests.
+
+    Returns:
+        The parsed response of the site.
+    """
+    return resp.json()
+
+
+def resolve_site(url, resolve=resolve_json, expiry=300):
     """Resolve a site using a cache.
 
     Args:
@@ -26,8 +38,10 @@ def resolve_site(url, resolve=lambda resp: resp.json(), expiry=300):
     Returns:
         The content of the URL.
     """
-    if url not in data_cache or time.time() - data_cache[url]["time"] > expiry:
-        data_cache[url] = {"time": time.time(), "data": resolve(requests.get(url))}
+    cache_update_time = data_cache.get(url, {}).get("time") or 0
+    if time.time() - cache_update_time > expiry:
+        url_contents = resolve(requests.get(url))
+        data_cache[url] = {"time": time.time(), "data": url_contents}
     return data_cache[url]["data"]
 
 
@@ -65,6 +79,9 @@ class NEUInfo(graphene.ObjectType):
     raw_data = graphene.String(description="Raw data from the NEU database.")
 
 
+BAZAAR_EXPIRY_SECONDS = 90
+
+
 class SBItem(graphene.ObjectType):
     """Object to store data for a Skyblock item."""
 
@@ -87,7 +104,7 @@ class SBItem(graphene.ObjectType):
             Data for a BazaarInfo object.
         """
         bz_products = resolve_site(
-            "https://api.hypixel.net/skyblock/bazaar", expiry=90
+            "https://api.hypixel.net/skyblock/bazaar", expiry=BAZAAR_EXPIRY_SECONDS
         )["products"]
         return bz_products.get(self.item_id, {}).get("sell_summary") and {
             "buy_price": bz_products[self.item_id]["sell_summary"][0]["pricePerUnit"],
@@ -118,12 +135,14 @@ class SBItem(graphene.ObjectType):
             Data for a NEUInfo object.
         """
         item_path = f"neu_cache/items/{self.item_id}.json"
-        item_data = os.path.exists(item_path) and ujson.load(open(item_path))
-        return item_data and {
-            "recipe": item_data.get("recipe") and item_data["recipe"].values(),
-            "wiki_link": item_data.get("info") and item_data["info"][0],
-            "raw_data": ujson.dumps(item_data),
-        }
+        if os.path.exists(item_path):
+            with open(item_path) as item_file:
+                item_data = ujson.load(item_file)
+                return {
+                    "recipe": item_data.get("recipe") and item_data["recipe"].values(),
+                    "wiki_link": item_data.get("info") and item_data["info"][0],
+                    "raw_data": ujson.dumps(item_data),
+                }
 
 
 class Query(graphene.ObjectType):

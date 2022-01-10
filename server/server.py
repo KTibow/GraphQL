@@ -1,5 +1,7 @@
 """Server for GraphQL and frontend."""
+
 from sanic import Sanic, response
+from sanic.log import logger
 from schema import schema
 
 app = Sanic(__name__)
@@ -17,7 +19,8 @@ async def graphql(request):
     """
     graphql_response = schema.execute(request.json["query"])
     if graphql_response.errors:
-        print(graphql_response.errors)
+        for error in graphql_response.errors:
+            logger.error(error, exc_info=True)
         return response.json(
             {"errors": [str(error) for error in graphql_response.errors]}, status=400
         )
