@@ -34,37 +34,51 @@ def resolve_site(url, resolve=lambda resp: resp.json(), expiry=300):
 class BazaarInfo(graphene.ObjectType):
     """Object to store bazaar info for an item."""
 
-    buy_price = graphene.Float()
-    sell_price = graphene.Float()
-    raw_data = graphene.String()
+    buy_price = graphene.Float(description="The lowest buy price.")
+    sell_price = graphene.Float(description="The highest sell price.")
+    raw_data = graphene.String(description="Raw data from the Hypixel bazaar.")
 
 
 class AuctionInfo(graphene.ObjectType):
     """Object to store auction info for an item."""
 
-    buy_price = graphene.Float()
-    sold_per_day = graphene.Int()
-    raw_data = graphene.String()
+    buy_price = graphene.Float(description="The lowest buy price.")
+    sold_per_day = graphene.Int(description="The number of items sold per day.")
+    raw_data = graphene.String(description="Raw data from the NEU auction house.")
 
 
 class NEUInfo(graphene.ObjectType):
     """Object to store data from NotEnoughUpdates for an item."""
 
-    recipe = graphene.List(graphene.String)
-    wiki_link = graphene.String()
-    raw_data = graphene.String()
+    recipe = graphene.List(
+        graphene.String,
+        description="""The recipe for the item. It's returned in the format of
+[
+    "ID:AMOUNT", "ID:AMOUNT", "ID:AMOUNT",
+    "ID:AMOUNT", "ID:AMOUNT", "ID:AMOUNT",
+    "ID:AMOUNT", "ID:AMOUNT", "ID:AMOUNT"
+]""",
+    )
+    wiki_link = graphene.String(
+        description="The Hypixel Skyblock fandom link for the item."
+    )
+    raw_data = graphene.String(description="Raw data from the NEU database.")
 
 
 class Item(graphene.ObjectType):
     """Object to store data for an item."""
 
-    name = graphene.String()
-    item_id = graphene.String()
-    npc_sell_price = graphene.Float()
-    raw_data = graphene.String()
-    bazaar_info = graphene.Field(BazaarInfo)
-    auction_info = graphene.Field(AuctionInfo)
-    neu_info = graphene.Field(NEUInfo)
+    name = graphene.String(description="The plain name of the item.")
+    item_id = graphene.String(description="The Hypixel ID of the item.")
+    npc_sell_price = graphene.Float(description="The NPC sell price for the item.")
+    raw_data = graphene.String(description="Raw data from the Hypixel items API.")
+    bazaar_info = graphene.Field(
+        BazaarInfo, description="Data from the Hypixel bazaar API."
+    )
+    auction_info = graphene.Field(
+        AuctionInfo, description="Data from the NEU auction house."
+    )
+    neu_info = graphene.Field(NEUInfo, description="Data from the NEU database.")
 
     def resolve_bazaar_info(self, _info):
         """Resolve an BazaarInfo for an item.
