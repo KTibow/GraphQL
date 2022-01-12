@@ -14,3 +14,11 @@
 .card {
     @apply bg-neutral-700 align-top inline-block m-8 p-8;
 }
+
+a {
+    @apply text-blue-500;
+}
+
+td:not(:first-child):not(:nth-child(2)) {
+    @apply text-2xl;
+}

@@ -47,6 +47,16 @@ async def item_wiki(_request):
     return await response.file("frontend/wiki.html", mime_type="text/html")
 
 
+@app.route("/about")
+async def about(_request):
+    """Shows the about page.
+
+    Returns:
+        The response object.
+    """
+    return await response.file("frontend/about.html", mime_type="text/html")
+
+
 @app.route("/graphiql")
 async def graphiql(_request):
     """Return the GraphiQL interface.
