@@ -1,6 +1,7 @@
 """GraphQL schema."""
 import gzip
 import os
+import re
 import time
 
 import graphene
@@ -168,7 +169,7 @@ class Query(graphene.ObjectType):
         """
         available_items = [
             SBItem(
-                name=sb_item["name"],
+                name=re.sub("§.", "", sb_item["name"]),
                 item_id=sb_item["id"],
                 npc_sell_price=sb_item.get("npc_sell_price"),
                 raw_data=ujson.dumps(sb_item),
