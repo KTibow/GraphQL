@@ -37,7 +37,7 @@ async def preflight(request):
     Returns:
         The response object.
     """
-    return response.json({}, headers={"Access-Control-Allow-Origin": "*"})
+    return response.json({}, headers={"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST", "Access-Control-Allow-Headers": "Content-Type"})
 
 
 @app.route("/")
