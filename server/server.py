@@ -27,6 +27,19 @@ async def graphql(request):
     return response.json({"data": graphql_response.data}, headers={"Access-Control-Allow-Origin": "*"})
 
 
+@app.route("/", methods=["OPTIONS"])
+async def preflight(request):
+    """Handle preflight requests.
+
+    Args:
+        request: The request object.
+
+    Returns:
+        The response object.
+    """
+    return response.json({}, headers={"Access-Control-Allow-Origin": "*"})
+
+
 @app.route("/")
 async def index(_request):
     """Return the home page.
