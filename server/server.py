@@ -22,9 +22,9 @@ async def graphql(request):
         for error in graphql_response.errors:
             logger.error(error, exc_info=True)
         return response.json(
-            {"errors": [str(error) for error in graphql_response.errors]}, status=400
+            {"errors": [str(error) for error in graphql_response.errors]}, status=400, headers={"Access-Control-Allow-Origin": "*"})
         )
-    return response.json({"data": graphql_response.data})
+    return response.json({"data": graphql_response.data}, headers={"Access-Control-Allow-Origin": "*"})
 
 
 @app.route("/")
